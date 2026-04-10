@@ -53,6 +53,8 @@ export default function App() {
   // Estado compartido de tareas
   const [tareas, setTareas] = useState<Tarea[]>([]);
 
+  const [notificaciones, setNotificaciones] = useState<string[]>([]);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2800);
@@ -61,8 +63,14 @@ export default function App() {
   const navigate = (view: ViewId) => setActiveView(view);
 
   const agregarTarea = (tarea: Tarea) => {
-    setTareas((prev) => [tarea, ...prev]);
-  };
+  setTareas((prev) => [tarea, ...prev]);
+
+  // 🔔 TRIGGER (simulado)
+  setNotificaciones((prev) => [
+    `Nueva tarea: ${tarea.titulo}`,
+    ...prev,
+  ]);
+};
 
   return (
     <div className="app">
@@ -98,7 +106,7 @@ export default function App() {
           {activeView === "vista-previa" && <VistaPrevia />}
 
           {activeView === "notificaciones" && (
-            <Notificaciones showToast={showToast} />
+            <Notificaciones showToast={showToast} notificaciones={notificaciones} />
           )}
         </div>
       </div>
