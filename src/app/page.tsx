@@ -24,19 +24,34 @@ export type ViewId =
   | "notificaciones";
 
 const titles: Record<ViewId, string> = {
-  "dashboard": "Panel principal",
+  dashboard: "Panel principal",
   "nueva-tarea": "Crear nueva tarea",
-  "pendientes": "Tareas pendientes",
-  "calificaciones": "Mis calificaciones",
+  pendientes: "Tareas pendientes",
+  calificaciones: "Mis calificaciones",
   "entrega-archivo": "Entregar archivo",
   "entrega-enlace": "Entregar enlace",
   "vista-previa": "Vista previa de archivos",
-  "notificaciones": "Notificaciones",
+  notificaciones: "Notificaciones",
 };
+
+export interface Tarea {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  curso: string;
+  fechaLimite: string;
+  puntosMaximos: number;
+  tipoEntrega: string;
+  notificar: boolean;
+  permitirTardia: boolean;
+}
 
 export default function App() {
   const [activeView, setActiveView] = useState<ViewId>("dashboard");
   const [toast, setToast] = useState<string | null>(null);
+
+  // Estado compartido de tareas
+  const [tareas, setTareas] = useState<Tarea[]>([]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -44,6 +59,10 @@ export default function App() {
   };
 
   const navigate = (view: ViewId) => setActiveView(view);
+
+  const agregarTarea = (tarea: Tarea) => {
+    setTareas((prev) => [tarea, ...prev]);
+  };
 
   return (
     <div className="app">
@@ -56,27 +75,28 @@ export default function App() {
         />
 
         <div className="content">
-          {activeView === "dashboard" && (
-            <Dashboard />
-          )}
+          {activeView === "dashboard" && <Dashboard tareas={tareas} />}
+
           {activeView === "nueva-tarea" && (
-            <NuevaTarea showToast={showToast} />
+            <NuevaTarea showToast={showToast} onCrear={agregarTarea} />
           )}
+
           {activeView === "pendientes" && (
             <TareasPendientes onNavigate={navigate} />
           )}
-          {activeView === "calificaciones" && (
-            <Calificaciones />
-          )}
+
+          {activeView === "calificaciones" && <Calificaciones />}
+
           {activeView === "entrega-archivo" && (
             <EntregaArchivo showToast={showToast} />
           )}
+
           {activeView === "entrega-enlace" && (
             <EntregaEnlace showToast={showToast} />
           )}
-          {activeView === "vista-previa" && (
-            <VistaPrevia />
-          )}
+
+          {activeView === "vista-previa" && <VistaPrevia />}
+
           {activeView === "notificaciones" && (
             <Notificaciones showToast={showToast} />
           )}
