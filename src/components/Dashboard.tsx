@@ -10,6 +10,15 @@ interface Props {
   tareas: Tarea[];
 }
 
+function esFechaExpirada(fechaLimite: string): boolean {
+  if (!fechaLimite) return false;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const limite = new Date(fechaLimite);
+  limite.setHours(0, 0, 0, 0);
+  return limite < hoy;
+}
+
 export default function Dashboard({ tareas }: Props) {
   return (
     <div>
@@ -55,26 +64,43 @@ export default function Dashboard({ tareas }: Props) {
             <div className="task-meta">No hay tareas aún</div>
           )}
 
-          {tareas.map((t) => (
-            <div className="task-item" key={t.id}>
-              <div
-                className="task-dot"
-                style={{ background: "#EF9F27" }}
-              />
-              <div>
-                <div className="task-name">{t.titulo}</div>
-                <div className="task-meta">
-                  {t.curso} · Vence {t.fechaLimite}
+          {tareas.map((t) => {
+            const expirada = esFechaExpirada(t.fechaLimite);
+
+            return (
+              <div className="task-item" key={t.id}>
+                <div
+                  className="task-dot"
+                  style={{ background: expirada ? "#D93025" : "#EF9F27" }}
+                />
+                <div>
+                  <div className="task-name">{t.titulo}</div>
+
+                  <div
+                    className="task-meta"
+                    style={{ color: expirada ? "#D93025" : undefined }}
+                  >
+                    {t.curso} · Vence {t.fechaLimite}
+                    {expirada && " — Expirada"}
+                  </div>
+
+                  {expirada ? (
+                    <span
+                      className="badge"
+                      style={{ background: "#FCEBEB", color: "#A32D2D" }}
+                    >
+                      Vencida
+                    </span>
+                  ) : (
+                    <span className="badge badge-pending">Pendiente</span>
+                  )}
                 </div>
-                <span className="badge badge-pending">
-                  Pendiente
-                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* NOTIFICACIONES (SE QUEDA IGUAL) */}
+        {/* NOTIFICACIONES */}
         <div className="card">
           <div className="section-title">Notificaciones recientes</div>
 
@@ -87,19 +113,15 @@ export default function Dashboard({ tareas }: Props) {
                 📋
               </div>
               <div>
-                <div className="notif-text">
-                  Nueva tarea publicada
-                </div>
-                <div className="notif-time">
-                  Automático
-                </div>
+                <div className="notif-text">Nueva tarea publicada</div>
+                <div className="notif-time">Automático</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* PROGRESO (LO DEJAMOS IGUAL) */}
+      {/* PROGRESO */}
       <div className="card">
         <div className="section-title">Progreso del curso</div>
 
@@ -123,10 +145,7 @@ export default function Dashboard({ tareas }: Props) {
               <span>75%</span>
             </div>
             <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: "75%" }}
-              />
+              <div className="progress-fill" style={{ width: "75%" }} />
             </div>
           </div>
         </div>

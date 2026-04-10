@@ -15,11 +15,19 @@ interface TareasPendientesProps {
   tareas: Tarea[];
 }
 
+function esFechaExpirada(fechaLimite: string): boolean {
+  if (!fechaLimite) return false;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const limite = new Date(fechaLimite);
+  limite.setHours(0, 0, 0, 0);
+  return limite < hoy;
+}
+
 export default function TareasPendientes({
   onNavigate,
   tareas,
 }: TareasPendientesProps) {
-
   const tareasPendientes = tareas.filter(
     (t) => t.estado === "Asignada" || t.estado === "Sin entregar"
   );
@@ -27,66 +35,77 @@ export default function TareasPendientes({
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ fontSize: 15, fontWeight: 500 }}>
-          Tareas pendientes
-        </div>
+        <div style={{ fontSize: 15, fontWeight: 500 }}>Tareas pendientes</div>
       </div>
 
       <div style={{ display: "grid", gap: 10 }}>
-
         {tareasPendientes.length === 0 && (
           <div className="task-meta">No hay tareas pendientes</div>
         )}
 
-        {tareasPendientes.map((t) => (
-          <div
-            key={t.id}
-            className="card"
-            style={{
-              borderLeft: "3px solid #EF9F27",
-              borderRadius:
-                "0 var(--border-radius-lg) var(--border-radius-lg) 0",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <div className="task-name">{t.titulo}</div>
+        {tareasPendientes.map((t) => {
+          const expirada = esFechaExpirada(t.fechaLimite);
 
-                <div className="task-meta">
-                  {t.curso} · {t.fechaLimite}
-                </div>
-
-                <span className="badge badge-pending">
-                  Pendiente
-                </span>
-              </div>
-
-              <button
-                className="btn btn-sm"
-                onClick={() =>
-                  onNavigate(
-                    t.tipoEntrega.includes("Enlace")
-                      ? "entrega-enlace"
-                      : "entrega-archivo"
-                  )
-                }
-              >
-                Entregar
-              </button>
-            </div>
-
+          return (
             <div
+              key={t.id}
+              className="card"
               style={{
-                fontSize: 12,
-                marginTop: 10,
-                paddingTop: 10,
-                borderTop: "0.5px solid var(--color-border-tertiary)",
+                borderLeft: `3px solid ${expirada ? "#D93025" : "#EF9F27"}`,
+                borderRadius: "0 var(--border-radius-lg) var(--border-radius-lg) 0",
               }}
             >
-              {t.descripcion}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  <div className="task-name">{t.titulo}</div>
+
+                  <div
+                    className="task-meta"
+                    style={{ color: expirada ? "#D93025" : undefined }}
+                  >
+                    {t.curso} · {t.fechaLimite}
+                    {expirada && " — Fecha expirada"}
+                  </div>
+
+                  {expirada ? (
+                    <span
+                      className="badge"
+                      style={{ background: "#FCEBEB", color: "#A32D2D" }}
+                    >
+                      Vencida
+                    </span>
+                  ) : (
+                    <span className="badge badge-pending">Pendiente</span>
+                  )}
+                </div>
+
+                <button
+                  className="btn btn-sm"
+                  onClick={() =>
+                    onNavigate(
+                      t.tipoEntrega.includes("Enlace")
+                        ? "entrega-enlace"
+                        : "entrega-archivo"
+                    )
+                  }
+                >
+                  Entregar
+                </button>
+              </div>
+
+              <div
+                style={{
+                  fontSize: 12,
+                  marginTop: 10,
+                  paddingTop: 10,
+                  borderTop: "0.5px solid var(--color-border-tertiary)",
+                }}
+              >
+                {t.descripcion}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

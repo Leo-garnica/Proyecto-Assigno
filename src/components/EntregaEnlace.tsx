@@ -11,28 +11,30 @@ interface EntregaInfo {
   estado: string;
 }
 
+function esFechaExpirada(fechaLimite: string): boolean {
+  if (!fechaLimite) return false;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const limite = new Date(fechaLimite);
+  limite.setHours(0, 0, 0, 0);
+  return limite < hoy;
+}
+
 export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
   const [url, setUrl] = useState("");
   const [comentario, setComentario] = useState("");
   const [entregaInfo, setEntregaInfo] = useState<EntregaInfo | null>(null);
 
-  // Cambia esta fecha para probar entregas a tiempo o con retraso
   const fechaLimite = "2026-04-20T23:59:00";
+  const expirada = esFechaExpirada(fechaLimite); // ← NUEVO
 
   const esUrlValida = useMemo(() => {
     try {
       const valor = url.trim();
       if (!valor) return false;
-
       const urlObj = new URL(valor);
-
-      const protocoloValido =
-        urlObj.protocol === "http:" || urlObj.protocol === "https:";
-
-      const hostValido = ["github.com", "gitlab.com", "bitbucket.org"].includes(
-        urlObj.hostname
-      );
-
+      const protocoloValido = urlObj.protocol === "http:" || urlObj.protocol === "https:";
+      const hostValido = ["github.com", "gitlab.com", "bitbucket.org"].includes(urlObj.hostname);
       return protocoloValido && hostValido;
     } catch {
       return false;
@@ -54,16 +56,9 @@ export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
 
     const ahora = new Date();
     const limite = new Date(fechaLimite);
-
     const estado = ahora <= limite ? "Entregado" : "Con retraso";
 
-    const nuevaEntrega = {
-      fechaEntrega: ahora.toLocaleString(),
-      estado,
-    };
-
-    setEntregaInfo(nuevaEntrega);
-
+    setEntregaInfo({ fechaEntrega: ahora.toLocaleString(), estado });
     showToast(
       estado === "Entregado"
         ? "Enlace entregado a tiempo"
@@ -79,8 +74,11 @@ export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
           Envía la URL de tu repositorio con el código fuente del proyecto.
           Asegúrate de que el repositorio sea público o que el docente tenga acceso.
         </p>
-        <p className="task-meta" style={{ fontSize: "12px", marginTop: 8 }}>
+
+        {/* ↓ NUEVO: color rojo si expirada */}
+        <p className="task-meta" style={{ fontSize: "12px", marginTop: 8, color: expirada ? "#D93025" : undefined }}>
           Fecha límite: {new Date(fechaLimite).toLocaleString()}
+          {expirada && " — Expirada"} {/* ← NUEVO */}
         </p>
       </div>
 
@@ -98,9 +96,7 @@ export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
           />
         </div>
 
-        <div className="task-meta">
-          Se aceptan repositorios de GitHub, GitLab o Bitbucket
-        </div>
+        <div className="task-meta">Se aceptan repositorios de GitHub, GitLab o Bitbucket</div>
 
         <div style={{ marginTop: 8 }}>
           <span className="badge badge-graded">github.com</span>{" "}
@@ -122,9 +118,7 @@ export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
         )}
 
         <div className="form-row" style={{ marginTop: 16 }}>
-          <label className="form-label">
-            Comentario para el profesor (opcional)
-          </label>
+          <label className="form-label">Comentario para el profesor (opcional)</label>
           <textarea
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
@@ -139,10 +133,8 @@ export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
               marginTop: 14,
               padding: 12,
               borderRadius: 8,
-              background:
-                entregaInfo.estado === "Entregado" ? "#EAF3DE" : "#FCEBEB",
-              color:
-                entregaInfo.estado === "Entregado" ? "#3B6D11" : "#A32D2D",
+              background: entregaInfo.estado === "Entregado" ? "#EAF3DE" : "#FCEBEB",
+              color: entregaInfo.estado === "Entregado" ? "#3B6D11" : "#A32D2D",
               fontSize: 12,
               fontWeight: 500,
             }}
@@ -154,10 +146,7 @@ export default function EntregaEnlace({ showToast }: EntregaEnlaceProps) {
         )}
 
         <div className="modal-footer">
-          <button className="btn" onClick={handleCancelar}>
-            Cancelar
-          </button>
-
+          <button className="btn" onClick={handleCancelar}>Cancelar</button>
           <button
             className={`btn btn-primary ${!esUrlValida ? "btn-disabled" : ""}`}
             disabled={!esUrlValida}
