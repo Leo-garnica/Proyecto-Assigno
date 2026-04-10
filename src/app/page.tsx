@@ -82,7 +82,7 @@ export default function App() {
           )}
 
           {activeView === "pendientes" && (
-            <TareasPendientes onNavigate={navigate} />
+           <TareasPendientes onNavigate={navigate} tareas={tareas} />
           )}
 
           {activeView === "calificaciones" && <Calificaciones />}

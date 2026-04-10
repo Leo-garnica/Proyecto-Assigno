@@ -12,6 +12,7 @@ interface Tarea {
   tipoEntrega: string;
   notificar: boolean;
   permitirTardia: boolean;
+  estado: string;
 }
 
 interface NuevaTareaProps {
@@ -52,6 +53,7 @@ export default function NuevaTarea({
       tipoEntrega,
       notificar,
       permitirTardia,
+      estado: "Asignada"
     };
 
     onCrear(nuevaTarea);
