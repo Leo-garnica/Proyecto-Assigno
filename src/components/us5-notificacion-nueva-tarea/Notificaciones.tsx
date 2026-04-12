@@ -1,3 +1,4 @@
+// US5 - Task Reynaldo: panel de bandeja de notificaciones que muestra los mensajes generados al publicar tareas
 interface NotificacionesProps {
   showToast: (msg: string) => void;
   notificaciones: string[];

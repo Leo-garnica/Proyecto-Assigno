@@ -6,6 +6,7 @@ export default function VistaPrevia() {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // US8 - Task Reinaldo: integración del visor en la interfaz para previsualizar PDF, JPG y PNG sin descargar
   const handleSeleccionarArchivo = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
 
@@ -38,6 +39,7 @@ export default function VistaPrevia() {
     return archivo.type === "application/pdf";
   }, [archivo]);
 
+  // US8 - Task Brenda: método para extraer y renderizar los metadatos del documento (nombre y tamaño)
   const tamanoLegible = useMemo(() => {
     if (!archivo) return "";
     const kb = archivo.size / 1024;
