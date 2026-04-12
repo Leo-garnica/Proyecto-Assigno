@@ -25,7 +25,7 @@ export async function GET() {
         rol ENUM('Docente','Estudiante') NOT NULL
       )
     `);
-    log.push("Tabla Usuarios");
+    log.push("✅ Tabla Usuarios");
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS Cursos (
@@ -36,7 +36,7 @@ export async function GET() {
         FOREIGN KEY (id_docente) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
       )
     `);
-    log.push("Tabla Cursos");
+    log.push("✅ Tabla Cursos");
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS Inscripciones (
@@ -48,7 +48,7 @@ export async function GET() {
         FOREIGN KEY (id_estudiante) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
       )
     `);
-    log.push("Tabla Inscripciones");
+    log.push("✅ Tabla Inscripciones");
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS Tareas (
@@ -64,7 +64,7 @@ export async function GET() {
         FOREIGN KEY (id_curso) REFERENCES Cursos(id_curso) ON DELETE CASCADE
       )
     `);
-    log.push("Tabla Tareas");
+    log.push("✅ Tabla Tareas");
 
     // Migracion: agregar columnas archivo_* si ya existia la tabla sin ellas
     const alterColumns = [
@@ -75,7 +75,7 @@ export async function GET() {
     for (const [col, def] of alterColumns) {
       try {
         await db.query(`ALTER TABLE Tareas ADD COLUMN ${col} ${def}`);
-        log.push(`Columna Tareas.${col} agregada`);
+        log.push(`✅ Columna Tareas.${col} agregada`);
       } catch {
         log.push(`↩ Columna Tareas.${col} ya existe`);
       }
@@ -94,7 +94,7 @@ export async function GET() {
         FOREIGN KEY (id_estudiante) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
       )
     `);
-    log.push("Tabla Entregas");
+    log.push("✅ Tabla Entregas");
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS Materiales_Adjuntos (
@@ -107,7 +107,7 @@ export async function GET() {
         FOREIGN KEY (id_entrega) REFERENCES Entregas(id_entrega) ON DELETE CASCADE
       )
     `);
-    log.push("Tabla Materiales_Adjuntos");
+    log.push("✅ Tabla Materiales_Adjuntos");
 
     // ── 2. Usuarios demo ─────────────────────────────────────────────────────
     // Docente demo (id_usuario = 1)
@@ -120,7 +120,7 @@ export async function GET() {
         `INSERT INTO Usuarios (nombre_completo, correo, contrasena_hash, rol)
          VALUES ('Docente Demo', 'docente@assigno.dev', 'demo_hash', 'Docente')`
       );
-      log.push("Usuario Docente Demo creado");
+      log.push("✅ Usuario Docente Demo creado");
     } else {
       log.push(`↩ Docente Demo ya existe (id=${docenteRows[0].id_usuario})`);
     }
@@ -135,7 +135,7 @@ export async function GET() {
         `INSERT INTO Usuarios (nombre_completo, correo, contrasena_hash, rol)
          VALUES ('Estudiante Demo', 'estudiante@assigno.dev', 'demo_hash', 'Estudiante')`
       );
-      log.push("Usuario Estudiante Demo creado");
+      log.push("✅ Usuario Estudiante Demo creado");
     } else {
       log.push(`↩ Estudiante Demo ya existe (id=${estudianteRows[0].id_usuario})`);
     }
