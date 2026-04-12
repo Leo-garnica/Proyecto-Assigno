@@ -1,38 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/layout/Sidebar";
-import Topbar from "@/layout/Topbar";
-import Dashboard from "@/components/Dashboard";
-import NuevaTarea from "@/components/NuevaTarea";
-import TareasPendientes from "@/components/TareasPendientes";
-import Calificaciones from "@/components/Calificaciones";
-import EntregaArchivo from "@/components/EntregaArchivo";
-import EntregaEnlace from "@/components/EntregaEnlace";
-import VistaPrevia from "@/components/VistaPrevia";
-import Notificaciones from "@/components/Notificaciones";
-import Toast from "@/components/Toast";
-
-export type ViewId =
-  | "dashboard"
-  | "nueva-tarea"
-  | "pendientes"
-  | "calificaciones"
-  | "entrega-archivo"
-  | "entrega-enlace"
-  | "vista-previa"
-  | "notificaciones";
-
-const titles: Record<ViewId, string> = {
-  dashboard: "Panel principal",
-  "nueva-tarea": "Crear nueva tarea",
-  pendientes: "Tareas pendientes",
-  calificaciones: "Mis calificaciones",
-  "entrega-archivo": "Entregar archivo",
-  "entrega-enlace": "Entregar enlace",
-  "vista-previa": "Vista previa de archivos",
-  notificaciones: "Notificaciones",
-};
+import DashboardDocente from "@/components/shared/DashboardDocente";
+import DashboardEstudiante from "@/components/shared/DashboardEstudiante";
 
 export interface Tarea {
   id: number;
@@ -44,74 +14,61 @@ export interface Tarea {
   tipoEntrega: string;
   notificar: boolean;
   permitirTardia: boolean;
+  estado: string;
+  archivoNombre?: string | null;
+  archivoUrl?: string | null;
+  archivoTamano?: number | null;
 }
 
+export type ViewId =
+  | "dashboard"
+  | "nueva-tarea"
+  | "pendientes"
+  | "calificaciones"
+  | "entrega-archivo"
+  | "entrega-enlace"
+  | "vista-previa"
+  | "notificaciones";
+
+type Rol = "Docente" | "Estudiante";
+
+// ── Usuarios fijos para demo (sin login) ──────────────────────────────────────
+const DOCENTE_DEMO  = { id_usuario: 1, nombre: "Docente Demo",   correo: "docente@assigno.dev"  };
+const ESTUDIANTE_DEMO = { id_usuario: 2, nombre: "Estudiante Demo", correo: "estudiante@assigno.dev" };
+
 export default function App() {
-  const [activeView, setActiveView] = useState<ViewId>("dashboard");
-  const [toast, setToast] = useState<string | null>(null);
+  const [rol, setRol] = useState<Rol>("Docente");
 
-  // Estado compartido de tareas
-  const [tareas, setTareas] = useState<Tarea[]>([]);
+  const [tareasCompartidas, setTareasCompartidas] = useState<Tarea[]>([]);
+  const [notificacionesCompartidas, setNotificacionesCompartidas] = useState<string[]>([]);
 
-  const [notificaciones, setNotificaciones] = useState<string[]>([]);
+  const toggleRol = () => setRol((r) => (r === "Docente" ? "Estudiante" : "Docente"));
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2800);
-  };
-
-  const navigate = (view: ViewId) => setActiveView(view);
-
-  const agregarTarea = (tarea: Tarea) => {
-  setTareas((prev) => [tarea, ...prev]);
-
-  // 🔔 TRIGGER (simulado)
-  setNotificaciones((prev) => [
-    `Nueva tarea: ${tarea.titulo}`,
-    ...prev,
-  ]);
-};
+  if (rol === "Docente") {
+    return (
+      <DashboardDocente
+        id_usuario={DOCENTE_DEMO.id_usuario}
+        nombre={DOCENTE_DEMO.nombre}
+        correo={DOCENTE_DEMO.correo}
+        onToggleRol={toggleRol}
+        rolActual={rol}
+        initialTareas={tareasCompartidas}
+        initialNotificaciones={notificacionesCompartidas}
+        onTareasChange={setTareasCompartidas}
+        onNotificacionesChange={setNotificacionesCompartidas}
+      />
+    );
+  }
 
   return (
-    <div className="app">
-      <Sidebar activeView={activeView} onNavigate={navigate} />
-
-      <div className="main">
-        <Topbar
-          title={titles[activeView]}
-          onNotifClick={() => navigate("notificaciones")}
-        />
-
-        <div className="content">
-          {activeView === "dashboard" && <Dashboard tareas={tareas} />}
-
-          {activeView === "nueva-tarea" && (
-            <NuevaTarea showToast={showToast} onCrear={agregarTarea} />
-          )}
-
-          {activeView === "pendientes" && (
-           <TareasPendientes onNavigate={navigate} tareas={tareas} />
-          )}
-
-          {activeView === "calificaciones" && <Calificaciones />}
-
-          {activeView === "entrega-archivo" && (
-            <EntregaArchivo showToast={showToast} />
-          )}
-
-          {activeView === "entrega-enlace" && (
-            <EntregaEnlace showToast={showToast} />
-          )}
-
-          {activeView === "vista-previa" && <VistaPrevia />}
-
-          {activeView === "notificaciones" && (
-            <Notificaciones showToast={showToast} notificaciones={notificaciones} />
-          )}
-        </div>
-      </div>
-
-      <Toast message={toast} />
-    </div>
+    <DashboardEstudiante
+      id_usuario={ESTUDIANTE_DEMO.id_usuario}
+      nombre={ESTUDIANTE_DEMO.nombre}
+      correo={ESTUDIANTE_DEMO.correo}
+      onToggleRol={toggleRol}
+      rolActual={rol}
+      tareasDocente={tareasCompartidas}
+      notificacionesDocente={notificacionesCompartidas}
+    />
   );
 }
