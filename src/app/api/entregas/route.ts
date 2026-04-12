@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 // US2 - Task Leo: GET devuelve entregas recibidas para que el docente pueda calificarlas
 // US4 - Task Leo: GET devuelve calificaciones y comentarios del estudiante autenticado
@@ -120,18 +119,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Archivo requerido." }, { status: 400 });
       }
 
-      const uploadsDir   = path.join(process.cwd(), "public", "uploads", "entregas");
-      await mkdir(uploadsDir, { recursive: true });
-
-      const timestamp    = Date.now();
-      const nombreSeguro = archivo.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const nombreFinal  = `${timestamp}-${nombreSeguro}`;
-      const rutaFisica   = path.join(uploadsDir, nombreFinal);
-
-      const buffer = Buffer.from(await archivo.arrayBuffer());
-      await writeFile(rutaFisica, buffer);
-
-      ruta_o_url      = `/uploads/entregas/${nombreFinal}`;
+      const blob = await put(
+        `entregas/${Date.now()}-${archivo.name}`,
+        archivo,
+        { access: "public" }
+      );
+      ruta_o_url      = blob.url;
       nombre_original = archivo.name;
       tamano_bytes    = archivo.size;
       tipo_material   = "Archivo";

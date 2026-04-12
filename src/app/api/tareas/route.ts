@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import transporter from "@/lib/mailer";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,12 +30,13 @@ export async function POST(req: NextRequest) {
       if (archivoFile.size > 50 * 1024 * 1024)
         return NextResponse.json({ error: "El archivo supera 50 MB." }, { status: 400 });
 
-      const uploadsDir  = path.join(process.cwd(), "public", "uploads", "tareas");
-      await mkdir(uploadsDir, { recursive: true });
-      const nombreFinal = `${Date.now()}-${archivoFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      await writeFile(path.join(uploadsDir, nombreFinal), Buffer.from(await archivoFile.arrayBuffer()));
+      const blob = await put(
+        `tareas/${Date.now()}-${archivoFile.name}`,
+        archivoFile,
+        { access: "public" }
+      );
       archivo_nombre = archivoFile.name;
-      archivo_url    = `/uploads/tareas/${nombreFinal}`;
+      archivo_url    = blob.url;
       archivo_tamano = archivoFile.size;
     }
 
